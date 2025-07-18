@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
 
 public class Main {
   public static void main(String[] args){
@@ -20,18 +21,20 @@ public class Main {
           // ensures that we don't run into 'Address already in use' errors
           serverSocket.setReuseAddress(true);
           // Wait for connection from client.
-          clientSocket = serverSocket.accept();
 
-            InputStream inputStream = clientSocket.getInputStream();
-            OutputStream outputStream = clientSocket.getOutputStream();
-            Scanner sc = new Scanner(inputStream);
+          while (true){
+              clientSocket = serverSocket.accept();
+              Socket finalClientSocket = clientSocket;
+              CompletableFuture.runAsync(() ->{
+                  try {
+                      handleClient(finalClientSocket);
+                  } catch (IOException e) {
+                      throw new RuntimeException(e);
+                  }
+              });
+          }
 
-            while(sc.hasNextLine()){
-                String nextLine = sc.nextLine();
-                if(nextLine.contains("PING")){
-                    outputStream.write("+PONG\r\n".getBytes());
-                }
-            }
+
 
         } catch (IOException e) {
           System.out.println("IOException: " + e.getMessage());
@@ -44,5 +47,18 @@ public class Main {
             System.out.println("IOException: " + e.getMessage());
           }
         }
+  }
+
+  public static void handleClient(Socket clientSocket) throws IOException {
+      InputStream inputStream = clientSocket.getInputStream();
+      OutputStream outputStream = clientSocket.getOutputStream();
+      Scanner sc = new Scanner(inputStream);
+
+      while(sc.hasNextLine()){
+          String nextLine = sc.nextLine();
+          if(nextLine.contains("PING")){
+              outputStream.write("+PONG\r\n".getBytes());
+          }
+      }
   }
 }

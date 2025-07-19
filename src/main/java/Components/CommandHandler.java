@@ -14,7 +14,7 @@ public class CommandHandler {
     public Store store;
 
     public String ping(String[] command){
-        return "+pong\r\n";
+        return "+PONG\r\n";
     }
 
     public String echo(String[] command){

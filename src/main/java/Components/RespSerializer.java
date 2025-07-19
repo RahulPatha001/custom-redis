@@ -9,27 +9,27 @@ import java.util.List;
 @Component
 public class RespSerializer {
 
-    public int getParts(char[] dataArr, int i, String[] subArr){
-        int j = 0;
-        while(i< dataArr.length && j < subArr.length){
+    public int getParts(char []dataArr, int i, String[] subArray){
+        int j=0;
+        while(i< dataArr.length && j < subArray.length){
             if(dataArr[i] == '$'){
-                // bulk string , $<length>\r\n<data>\r\n
+                //bulk String
+                //$<length>\r\n<data>\r\n
                 i++;
                 String partLength = "";
-                while (i<dataArr.length && Character.isDigit(dataArr[i])){
+                while(i < dataArr.length && Character.isDigit(dataArr[i])){
                     partLength += dataArr[i];
                     i++;
                 }
                 i+=2;
                 String part = "";
-                for(int k = 0; k<Integer.parseInt(partLength); i++){
-                    part += dataArr[i++];
+                for(int k=0; k<Integer.parseInt(partLength);k++){
+                    part+=dataArr[i++];
                 }
                 i+=2;
-                subArr[j++] = part;
+                subArray[j++]=part;
             }
         }
-
         return i;
     }
 

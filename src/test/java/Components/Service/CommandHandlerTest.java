@@ -1,7 +1,7 @@
 //package Components.Service;
 //
 //import Components.Server.RedisConfig;
-//import Components.Server.TCPServer;
+//import Components.Server.MasterTCPServer;
 //import Config.AppConfig;
 //import org.junit.jupiter.api.BeforeAll;
 //import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@
 //    public static void setUp(@Autowired ApplicationContext context) throws InterruptedException {
 //
 //        RedisConfig redisConfig = context.getBean(RedisConfig.class);
-//        TCPServer app = context.getBean(TCPServer.class);
+//        MasterTCPServer app = context.getBean(MasterTCPServer.class);
 //
 //        redisConfig.setPort(6379);
 //        redisConfig.setRole("master");

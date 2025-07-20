@@ -17,8 +17,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Component
-public class TCPServer {
-    private static final Logger logger = Logger.getLogger(TCPServer.class.getName());
+public class MasterTCPServer {
+    private static final Logger logger = Logger.getLogger(MasterTCPServer.class.getName());
 
     @Autowired
     private RespSerializer respSerializer;
@@ -26,11 +26,14 @@ public class TCPServer {
     @Autowired
     private CommandHandler commandHandler;
 
-    public void startWorking(int port){
+    @Autowired
+    private RedisConfig redisConfig;
+
+    public void startWorking(){
 
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
-//        int port = 6379;
+        int port = redisConfig.getPort();
         try {
             serverSocket = new ServerSocket(port);
             // Since the tester restarts your program quite often, setting SO_REUSEADDR

@@ -94,7 +94,7 @@ public class SlaveTCPServer {
             int lenListeningPort = (redisConfig.getPort()+"").length();
             int listeningPort = redisConfig.getPort();
             String repliconf = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$" +
-                    (lenListeningPort + " ") + "\r\n" + (listeningPort+ " ")+ "\r\n";
+                    (lenListeningPort + "") + "\r\n" + (listeningPort+ "")+ "\r\n";
             data = repliconf.getBytes();
             outputStream.write(data);
             bytesRead = inputStream.read(inputBuffer, 0,inputBuffer.length);

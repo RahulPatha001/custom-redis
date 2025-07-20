@@ -67,7 +67,7 @@ public class CommandHandler {
         int replication = Arrays.stream(command).toList().indexOf("replication");
 
         if(replication> -1){
-            return respSerializer.serializeBulkString("role:" + redisConfig.role);
+            return respSerializer.serializeBulkString("role:" + redisConfig.getRole());
         }
 
         return "";

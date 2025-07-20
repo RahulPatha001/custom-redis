@@ -3,7 +3,6 @@ package Components.Service;
 import Components.Server.RedisConfig;
 import Components.Server.TCPServer;
 import Config.AppConfig;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Slf4j
 @SpringBootTest(classes = AppConfig.class)
 class CommandHandlerTest {
 

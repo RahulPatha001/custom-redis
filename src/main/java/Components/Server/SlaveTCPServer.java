@@ -108,6 +108,14 @@ public class SlaveTCPServer {
             response = new String(inputBuffer,0,bytesRead ,StandardCharsets.UTF_8);
             logger.log(Level.FINE, response);
 
+            // step 3 of handshake
+            String psync = "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n" ;
+            data = psync.getBytes();
+            outputStream.write(data);
+            bytesRead = inputStream.read(inputBuffer, 0,inputBuffer.length);
+            response = new String(inputBuffer,0,bytesRead ,StandardCharsets.UTF_8);
+            logger.log(Level.FINE, response);
+
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage());
         }

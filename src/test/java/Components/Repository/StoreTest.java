@@ -2,7 +2,6 @@ package Components.Repository;
 
 import Components.Service.RespSerializer;
 import Config.AppConfig;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Slf4j
 @SpringBootTest(classes = AppConfig.class)
 class StoreTest {
 

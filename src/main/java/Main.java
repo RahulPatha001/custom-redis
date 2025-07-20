@@ -1,5 +1,6 @@
-import Components.TCPServer;
-import io.micrometer.observation.Observation;
+import Components.Server.RedisConfig;
+import Components.Server.TCPServer;
+import Config.AppConfig;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 
@@ -11,6 +12,7 @@ public class Main {
               new AnnotationConfigApplicationContext(AppConfig.class);
 
       TCPServer app = context.getBean(TCPServer.class);
+    RedisConfig redisConfig = context.getBean(RedisConfig.class);
 
       int port = 6379;
       for(int i = 0; i< args.length; i++){
@@ -19,18 +21,12 @@ public class Main {
           i++;
         }
       }
+      redisConfig.setPort(port);
+      redisConfig.setRole("master");
 
       app.startWorking(port);
 
-//      Uncomment this block to pass the first stage
 
   }
-  public static String encodeResponseString(String s){
-    String resp = "$";
-    resp+=s.length();
-    resp+="\r\n";
-    resp+=s;
-    resp+="\r\n";
-    return resp;
-  }
+
 }

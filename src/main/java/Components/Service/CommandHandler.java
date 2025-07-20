@@ -1,19 +1,28 @@
-package Components;
+package Components.Service;
 
 
+import Components.Repository.Store;
+import Components.Server.RedisConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Component
 public class CommandHandler {
+    private static final Logger logger = Logger.getLogger(CommandHandler.class.getName());
 
     @Autowired
     public RespSerializer respSerializer;
 
     @Autowired
     public Store store;
+
+    @Autowired
+    public RedisConfig redisConfig;
 
     public String ping(String[] command){
         return "+PONG\r\n";
@@ -38,7 +47,7 @@ public class CommandHandler {
                 return store.set(key, value);
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.log(Level.SEVERE,e.getMessage());
             return "$-1\r\n";
         }
 
@@ -49,9 +58,19 @@ public class CommandHandler {
             String key = command[1];
             return store.get(key);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.log(Level.SEVERE,e.getMessage());
             return "$-1\r\n";
         }
 
+    }
+
+    public String info(String[] command){
+        int replication = Arrays.stream(command).toList().indexOf("replication");
+
+        if(replication> -1){
+            return respSerializer.serializeBulkString("role:" + redisConfig.role);
+        }
+
+        return "";
     }
 }

@@ -1,5 +1,9 @@
-package Components;
+package Components.Server;
 
+import Components.Service.CommandHandler;
+import Components.Service.RespSerializer;
+import Infra.Client;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -8,13 +12,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Component
 public class TCPServer {
+    private static final Logger logger = Logger.getLogger(TCPServer.class.getName());
 
     @Autowired
     private RespSerializer respSerializer;
@@ -51,18 +56,15 @@ public class TCPServer {
                     }
                 });
             }
-
-
-
         } catch (IOException e) {
-            System.out.println("IOException: " + e.getMessage());
+            logger.log(Level.SEVERE,e.getMessage());
         } finally {
             try {
                 if (clientSocket != null) {
                     clientSocket.close();
                 }
             } catch (IOException e) {
-                System.out.println("IOException: " + e.getMessage());
+                logger.log(Level.SEVERE,e.getMessage());
             }
         }
     }
@@ -80,20 +82,6 @@ public class TCPServer {
                 }
             }
         }
-//        Scanner sc = new Scanner(client.inputStream);
-//
-//        while(sc.hasNextLine()){
-//            String nextLine = sc.nextLine();
-//            if(nextLine.contains("PING")){
-//                outputStream.write("+PONG\r\n".getBytes());
-//            }
-//            if(nextLine.contains("ECHO")){
-//                String respHeader = sc.nextLine();
-//                String respBody = sc.nextLine();
-//                String response = respHeader+ "\r\n" + respBody + "\r\n";
-//                outputStream.write((response).getBytes());
-//            }
-//        }
     }
 
     public void handleCommand(String[] command, Client client) throws IOException{
@@ -111,6 +99,9 @@ public class TCPServer {
                 break;
             case "GET":
                 res = commandHandler.get(command);
+                break;
+            case "INFO":
+                res = commandHandler.info(command);
                 break;
         }
         if(res != null && !res.equals(""))

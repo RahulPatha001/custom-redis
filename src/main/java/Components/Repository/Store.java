@@ -1,5 +1,7 @@
-package Components;
+package Components.Repository;
 
+import Components.Service.RespSerializer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -7,9 +9,13 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Component
 public class Store {
+
+    private static final Logger logger = Logger.getLogger(Store.class.getName());
 
     @Autowired
     RespSerializer respSerializer;
@@ -31,7 +37,7 @@ public class Store {
 
             return "+OK\r\n";
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.log(Level.SEVERE,e.getMessage());
             return "$-1\r\n";
         }
     }
@@ -46,7 +52,7 @@ public class Store {
 
             return "+OK\r\n";
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.log(Level.SEVERE,e.getMessage());
             return "$-1\r\n";
         }
     }
@@ -63,7 +69,7 @@ public class Store {
 
             return respSerializer.serializeBulkString(value.val);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.log(Level.SEVERE,e.getMessage());
             return "$-1\r\n";
         }
     }

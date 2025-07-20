@@ -22,11 +22,11 @@ public class TCPServer {
     @Autowired
     private CommandHandler commandHandler;
 
-    public void startWorking(){
+    public void startWorking(int port){
 
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
-        int port = 6379;
+//        int port = 6379;
         try {
             serverSocket = new ServerSocket(port);
             // Since the tester restarts your program quite often, setting SO_REUSEADDR

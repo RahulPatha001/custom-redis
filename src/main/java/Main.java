@@ -11,7 +11,16 @@ public class Main {
               new AnnotationConfigApplicationContext(AppConfig.class);
 
       TCPServer app = context.getBean(TCPServer.class);
-      app.startWorking();
+
+      int port = 6379;
+      for(int i = 0; i< args.length; i++){
+        if(args[i].equals("--port")){
+          port = Integer.parseInt(args[i+1]);
+          i++;
+        }
+      }
+
+      app.startWorking(port);
 
 //      Uncomment this block to pass the first stage
 

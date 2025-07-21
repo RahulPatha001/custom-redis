@@ -111,7 +111,7 @@ public class CommandHandler {
         return "+OK\r\n";
     }
 
-    public String psync(String[] command) {
-
-    }
+//    public String psync(String[] command) {
+//
+//    }
 }

@@ -111,7 +111,17 @@ public class CommandHandler {
         return "+OK\r\n";
     }
 
-//    public String psync(String[] command) {
-//
-//    }
+    public String psync(String[] command) {
+        String replicationIdMaster = command[1];
+        String replicationOffsetMaster = command[2];
+
+        if(replicationIdMaster.equals("?") && replicationOffsetMaster.equals("0")){
+            String replicationId = redisConfig.getMasterReplId();
+            long replicationOffset = redisConfig.getMasterReplOffset();
+            String res = "+FULLRESYNC " + replicationId+" "+ replicationOffset+ "\r\n";
+            return res;
+        }else {
+            return "Options are not supported yet";
+        }
+    }
 }

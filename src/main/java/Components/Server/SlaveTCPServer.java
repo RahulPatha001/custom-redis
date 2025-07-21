@@ -164,9 +164,9 @@ public class SlaveTCPServer {
             case "REPLCONF":
                 res = commandHandler.repelconf(command, client);
                 break;
-//            case "PSYNC":
-//                res = commandHandler.psync(command);
-//                break;
+            case "PSYNC":
+                res = commandHandler.psync(command);
+                break;
         }
         if(res != null && !res.equals(""))
             client.outputStream.write(res.getBytes());

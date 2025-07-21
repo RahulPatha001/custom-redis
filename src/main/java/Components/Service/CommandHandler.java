@@ -115,7 +115,7 @@ public class CommandHandler {
         String replicationIdMaster = command[1];
         String replicationOffsetMaster = command[2];
 
-        if(replicationIdMaster.equals("?") && replicationOffsetMaster.equals("0")){
+        if(replicationIdMaster.equals("?") && replicationOffsetMaster.equals("-1")){
             String replicationId = redisConfig.getMasterReplId();
             long replicationOffset = redisConfig.getMasterReplOffset();
             String res = "+FULLRESYNC " + replicationId+" "+ replicationOffset+ "\r\n";

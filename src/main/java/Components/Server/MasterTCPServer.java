@@ -1,6 +1,7 @@
 package Components.Server;
 
 import Components.Infra.ConnectionPool;
+import Components.Infra.Slave;
 import Components.Service.CommandHandler;
 import Components.Service.RespSerializer;
 import Components.Infra.Client;
@@ -106,6 +107,8 @@ public class MasterTCPServer {
                 break;
             case "SET":
                 res = commandHandler.set(command);
+                // trickle down to slave
+                CompletableFuture.runAsync(() -> propagate(command));
                 break;
             case "GET":
                 res = commandHandler.get(command);
@@ -123,5 +126,16 @@ public class MasterTCPServer {
                 break;
         }
         client.send(res,data);
+    }
+
+    private void propagate(String[] command) {
+        String commandRespString = respSerializer.respArray(command);
+        try {
+            for(Slave s: connectionPool.getSlaves()){
+                s.send(commandRespString.getBytes());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

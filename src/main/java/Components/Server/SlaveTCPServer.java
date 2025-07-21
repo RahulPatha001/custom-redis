@@ -4,6 +4,7 @@ import Components.Infra.ConnectionPool;
 import Components.Service.CommandHandler;
 import Components.Service.RespSerializer;
 import Components.Infra.Client;
+import Components.Service.ResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -144,6 +145,7 @@ public class SlaveTCPServer {
 
     public void handleCommand(String[] command, Client client) throws IOException{
         String res = "";
+        byte[] data = null;
 
         switch (command[0]){
             case "PING":
@@ -165,10 +167,11 @@ public class SlaveTCPServer {
                 res = commandHandler.repelconf(command, client);
                 break;
             case "PSYNC":
-                res = commandHandler.psync(command);
+                ResponseDto resDto = commandHandler.psync(command);
+                res = resDto.getResponse();
+                data = resDto.getData();
                 break;
         }
-        if(res != null && !res.equals(""))
-            client.outputStream.write(res.getBytes());
+        client.send(res,data);
     }
 }

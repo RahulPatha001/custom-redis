@@ -111,7 +111,7 @@ public class MasterTCPServer {
             case "INFO":
                 res = commandHandler.info(command);
                 break;
-            case "REPELCONF":
+            case "REPLCONF":
                 res = commandHandler.repelconf(command, client);
                 break;
 //            case "PSYNC":

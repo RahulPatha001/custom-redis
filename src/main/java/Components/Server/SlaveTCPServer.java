@@ -121,6 +121,9 @@ public class SlaveTCPServer {
             outputStream.write(data);
             List<Integer>res =  handlePsyncResponse(inputStream);
 
+            //no of bytes in the input stream coming from master after this point, if they are read and command is processed
+            // we can add the no of bytes processed to offset
+
             while (master.isConnected()){
                 int offSet = 1;
                 StringBuilder sb = new StringBuilder();
@@ -148,7 +151,28 @@ public class SlaveTCPServer {
                 if(command.equals("+OK\r\n"))
                     continue;
                 String[] commandArray = respSerializer.parseArray(parts);
-                String commandResult = handleCommandFromMaster(commandArray, master);
+                Client masterClient = new Client(master, master.getInputStream(), master.getOutputStream(), -1);
+                String commandResult = handleCommandFromMaster(commandArray, masterClient);
+
+                if(commandArray.length>=2 && commandArray[0].equals("REPLCONF") && commandArray[1].equals("GETACK")){
+                    outputStream.write(commandResult.getBytes());
+                    offSet++;
+                    List<Byte> leftOverBytes = new ArrayList<>();
+                    while(true){
+                        if(inputStream.available() <= 0)
+                            break;
+                        byte b = (byte) inputStream.read();
+                        leftOverBytes.add(b);
+                        if((int) b == (int)'*')
+                            break;
+                        offSet++;
+                    }
+                    StringBuilder leftOverSb = new StringBuilder();
+                    for(Byte b : leftOverBytes){
+                        leftOverSb.append((char)(b.byteValue() & 0XFF));
+                    }
+                }
+                redisConfig.setMasterReplOffset(offSet + redisConfig.getMasterReplOffset());
             }
 
         } catch (Exception e) {
@@ -156,7 +180,7 @@ public class SlaveTCPServer {
         }
     }
 
-    private String handleCommandFromMaster(String[] command, Socket master) {
+    private String handleCommandFromMaster(String[] command, Client master) {
         String cmd = command[0];
         cmd = cmd.toUpperCase();
         String res = "";
@@ -164,6 +188,9 @@ public class SlaveTCPServer {
             case "SET":
                 commandHandler.set(command);
                 CompletableFuture.runAsync(() -> propagate(command));
+                break;
+            case "REPLCONF":
+                res = commandHandler.repelconf(command, master);
                 break;
         }
         return  res;

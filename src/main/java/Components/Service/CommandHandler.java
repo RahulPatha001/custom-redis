@@ -95,6 +95,9 @@ public class CommandHandler {
                 Slave s = new Slave(client);
                 connectionPool.addSlave(s);
                 return "+OK\r\n";
+            case "GETACK":
+                String[] replconfAck = new String[]{"REPLCONF", "ACK", redisConfig.getMasterReplOffset()+""};
+                return respSerializer.respArray(replconfAck);
             case "capa":
                 Slave slave = null;
                 for(Slave ss : connectionPool.getSlaves()){

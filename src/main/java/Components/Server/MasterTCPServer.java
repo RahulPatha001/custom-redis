@@ -111,7 +111,7 @@ public class MasterTCPServer {
                 // trickle down to slave
                 String respArr = respSerializer.respArray(command);
                 byte[] bytes = respArr.getBytes();
-                connectionPool.slavesThatAreCaughtUp+= bytes.length;
+                connectionPool.bytesSentToSlaves+= bytes.length;
                 CompletableFuture.runAsync(() -> propagate(command));
                 break;
             case "GET":

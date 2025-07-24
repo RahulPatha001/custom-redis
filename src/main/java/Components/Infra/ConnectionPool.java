@@ -9,7 +9,7 @@ import java.util.Set;
 public class ConnectionPool {
     private Set<Client> clients;
     private Set<Slave> slaves;
-    private int slavesThatAreCaughtUp = 0;
+    public int slavesThatAreCaughtUp = 0;
     private int bytesSentToSlaves = 0;
 
     public void slaveAck(int ackResponse){
@@ -70,13 +70,7 @@ public class ConnectionPool {
         return slaves.remove(slaveToRemove);
     }
 
-    public int getSlavesThatAreCaughtUp() {
-        return slavesThatAreCaughtUp;
-    }
 
-    public void setSlavesThatAreCaughtUp(int slavesThatAreCaughtUp) {
-        this.slavesThatAreCaughtUp = slavesThatAreCaughtUp;
-    }
 
     public int getBytesSentToSlaves() {
         return bytesSentToSlaves;

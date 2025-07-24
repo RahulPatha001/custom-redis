@@ -25,4 +25,10 @@ public class Client {
             outputStream.write(data);
         }
     }
+
+    public void send( byte[] data) throws IOException {
+        if(data != null){
+            outputStream.write(data);
+        }
+    }
 }

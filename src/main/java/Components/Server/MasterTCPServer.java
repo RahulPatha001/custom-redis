@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
@@ -108,6 +109,9 @@ public class MasterTCPServer {
             case "SET":
                 res = commandHandler.set(command);
                 // trickle down to slave
+                String respArr = respSerializer.respArray(command);
+                byte[] bytes = respArr.getBytes();
+                connectionPool.slavesThatAreCaughtUp+= bytes.length;
                 CompletableFuture.runAsync(() -> propagate(command));
                 break;
             case "GET":
@@ -125,7 +129,13 @@ public class MasterTCPServer {
                 data = resDto.getData();
                 break;
             case "WAIT":
-                res = respSerializer.respInteger(connectionPool.getSlavesThatAreCaughtUp());
+                if(connectionPool.getBytesSentToSlaves() == 0){
+                    res = respSerializer.respInteger(connectionPool.slavesThatAreCaughtUp);
+                    break;
+                }
+                Instant now = Instant.now();
+                res = commandHandler.wait(command,now);
+                connectionPool.slavesThatAreCaughtUp = 0;
                 break;
         }
         client.send(res,data);

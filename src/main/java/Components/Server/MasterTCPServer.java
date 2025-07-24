@@ -129,7 +129,7 @@ public class MasterTCPServer {
                 data = resDto.getData();
                 break;
             case "WAIT":
-                if(connectionPool.getBytesSentToSlaves() == 0){
+                if(connectionPool.bytesSentToSlaves == 0){
                     res = respSerializer.respInteger(connectionPool.slavesThatAreCaughtUp);
                     break;
                 }

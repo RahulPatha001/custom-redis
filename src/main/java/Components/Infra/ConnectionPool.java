@@ -10,7 +10,7 @@ public class ConnectionPool {
     private Set<Client> clients;
     private Set<Slave> slaves;
     public int slavesThatAreCaughtUp = 0;
-    private int bytesSentToSlaves = 0;
+    public int bytesSentToSlaves = 0;
 
     public void slaveAck(int ackResponse){
         if(this.bytesSentToSlaves == ackResponse){
@@ -72,11 +72,5 @@ public class ConnectionPool {
 
 
 
-    public int getBytesSentToSlaves() {
-        return bytesSentToSlaves;
-    }
 
-    public void setBytesSentToSlaves(int bytesSentToSlaves) {
-        this.bytesSentToSlaves = bytesSentToSlaves;
-    }
 }

@@ -124,6 +124,9 @@ public class MasterTCPServer {
                 res = resDto.getResponse();
                 data = resDto.getData();
                 break;
+            case "WAIT":
+                res = respSerializer.respInteger(connectionPool.getSlavesThatAreCaughtUp());
+                break;
         }
         client.send(res,data);
     }

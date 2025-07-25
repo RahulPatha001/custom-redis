@@ -186,10 +186,10 @@ public class MasterTCPServer {
                 res = commandHandler.echo(command);
                 break;
             case "EXEC":
-                res = "-ERR EXEC WITHOUT MULTI\r\n";
+                res = "-ERR EXEC without MULTI\r\n";
                 break;
             case "DISCARD":
-                res = "-ERR DISCARD WITHOUT MULTI\r\n";
+                res = "-ERR DISCARD without MULTI\r\n";
                 break;
             case "MULTI":
                 client.beginTransaction();

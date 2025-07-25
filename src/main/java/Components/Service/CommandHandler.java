@@ -13,9 +13,12 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -207,5 +210,112 @@ public class CommandHandler {
          }
 
         return res;
+    }
+
+    public BiFunction<String[], Map<String, Value>, String > getTransactionalCommandCacheApplier(){
+        final Store localStore = this.store;
+        final RespSerializer localSerializer = this.respSerializer;
+
+        return (String[] command, Map<String, Value> map) -> {
+            String res = "";
+            switch (command[0]){
+                case "SET":
+                    res = handleSetCommandTransactional(command, map, localSerializer, localStore);
+                    break;
+                case "GET":
+                    res = handleGetCommandTransactional(command,map ,res, localSerializer, localStore);
+                    break;
+                case "INCR":
+                    res = handleIncrCommandTransactional(command, map,res, localSerializer, localStore);
+                    break;
+                case "DEL":
+                    String key = command[1];
+                    Value val = localStore.getValue(key);
+                    val.isDeletedinTransaction = true;
+                    res = handleDelCommandTransactional(command, map,res, localSerializer, localStore);
+                    break;
+                default:
+                    res = "-ERR unknown command "+ command[0]+"\r\n";
+                    break;
+            }
+            return res;
+        };
+    }
+
+    private String handleDelCommandTransactional(String[] command, Map<String, Value> map, String res, RespSerializer localSerializer, Store localStore) {
+        String key = command[1];
+        Value valuetouse ;
+        Value cachedValue = map.getOrDefault(key, null);
+        if(cachedValue == null){
+            Value storeValue = localStore.getValue(key);
+            if(storeValue == null){
+                return "-ERR deleting an invalid key\r\n";
+            }else {
+                valuetouse = new Value(storeValue.val, storeValue.created, storeValue.expiry);
+
+            }
+        }else {
+            valuetouse = cachedValue;
+        }
+        valuetouse.isDeletedinTransaction = true;
+        map.put(key, valuetouse);
+        return "+OK\r\n";
+    }
+
+    private String handleIncrCommandTransactional(String[] command, Map<String, Value> map,
+                                                  String res,RespSerializer localSerializer,Store localStore) {
+
+        try {
+            String key = command[1];
+            Value valuetouse;
+            Value cachedValue = map.getOrDefault(key, null);
+            if(cachedValue == null){
+                Value storeValue = localStore.getValue(key);
+                if(storeValue == null){
+                    valuetouse = new Value("0", LocalDateTime.now(), LocalDateTime.MAX);
+                }else {
+                    valuetouse = new Value(storeValue.val, storeValue.created, storeValue.expiry);
+                }
+            }else {
+                valuetouse = cachedValue;
+
+            }
+            int val = Integer.parseInt(valuetouse.val);
+            val++;
+            valuetouse.val = String.valueOf(val);
+            map.put(key, valuetouse);
+
+            return respSerializer.respInteger(val);
+
+        } catch (Exception e) {
+            return "-ERR value is not an integer or out of range\r\n";
+        }
+
+    }
+
+    private String handleGetCommandTransactional(String[] command,Map<String, Value> map, String res,RespSerializer localSerializer,Store localStore) {
+        String key = command[1];
+        Value valuetouse ;
+        Value cachedValue = map.getOrDefault(key, null);
+        if(cachedValue == null){
+            Value storeValue = localStore.getValue(key);
+            if(storeValue == null){
+                return localStore.get(key);
+            }else {
+                valuetouse = new Value(storeValue.val, storeValue.created, storeValue.expiry);
+                map.put(key, valuetouse);
+            }
+        }else {
+            valuetouse = cachedValue;
+
+        }
+        return respSerializer.serializeBulkString(valuetouse.val);
+    }
+
+    private String handleSetCommandTransactional(String[] command, Map<String, Value> map,RespSerializer localSerializer,Store localStore) {
+        String key = command[1];
+        Value newValue = new Value(command[2], LocalDateTime.now(), LocalDateTime.MAX);
+        map.put(key, newValue);
+        return "+OK\r\n";
     }
 }

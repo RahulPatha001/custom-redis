@@ -192,22 +192,22 @@ public class CommandHandler {
     public String incr(String[] command) {
         String key = command[1];
         String res = "";
-         try {
-             Value value = store.getValue(key);
-             if(value == null){
-                 store.set(key, "0");
-                 value = store.getValue(key);
-             }
+        try {
+            Value value = store.getValue(key);
+            if(value == null){
+                store.set(key, "0");
+                value = store.getValue(key);
+            }
 
-             int val = Integer.parseInt(value.val);
-             val++;
-             value.val = val+"";
+            int val = Integer.parseInt(value.val);
+            val++;
+            value.val = val+"";
 
-             res = respSerializer.respInteger(val);
+            res = respSerializer.respInteger(val);
 
-         } catch (Exception e) {
-             res = "-ERR value is not an integer or out of range\r\n";
-         }
+        } catch (Exception e) {
+            res = "-ERR value is not an integer or out of range\r\n";
+        }
 
         return res;
     }
@@ -317,5 +317,92 @@ public class CommandHandler {
         Value newValue = new Value(command[2], LocalDateTime.now(), LocalDateTime.MAX);
         map.put(key, newValue);
         return "+OK\r\n";
+    }
+    public ResponseDto caseHandler(String[] command, Client client){
+
+        // control comes here when client is not in transaction
+        String res = "";
+        byte[] data = null;
+
+        switch (command[0]){
+            case "PING":
+                res = ping(command); // Use ping method
+                break;
+            case "INCR":
+                res = incr(command); // Use incr method
+                break;
+            case "ECHO":
+                res = echo(command); // Use echo method
+                break;
+            case "EXEC":
+                res = "-ERR EXEC without MULTI\r\n";
+                break;
+            case "DISCARD":
+                res = "-ERR DISCARD without MULTI\r\n";
+                break;
+            case "MULTI":
+                client.beginTransaction();
+                res = "+OK\r\n";
+                break;
+            case "SET":
+                res = set(command); // Use set method
+                // trickle down to slave
+                String respArr = respSerializer.respArray(command);
+                byte[] bytes = respArr.getBytes();
+                connectionPool.bytesSentToSlaves+= bytes.length;
+                CompletableFuture.runAsync(() -> propagate(command));
+                break;
+            case "GET":
+                res = get(command); // Use get method
+                break;
+            case "INFO":
+                res = info(command); // Use info method
+                break;
+            case "REPLCONF":
+                res = repelconf(command, client); // Use repelconf method
+                break;
+            case "PSYNC":
+                ResponseDto resDto = psync(command); // Use psync method
+                res = resDto.getResponse();
+                data = resDto.getData();
+                break;
+            case "WAIT":
+                if(connectionPool.bytesSentToSlaves == 0){
+                    res = respSerializer.respInteger(connectionPool.slavesThatAreCaughtUp);
+                    break;
+                }
+                Instant now = Instant.now();
+                res = wait(command,now); // Use wait method
+                connectionPool.slavesThatAreCaughtUp = 0;
+                break;
+            case "CONFIG": // Add this new case
+                if (command.length >= 3 && command[1].equalsIgnoreCase("GET")) {
+                    String param = command[2];
+                    if (param.equalsIgnoreCase("dir")) {
+                        res = respSerializer.respArray(new String[]{"dir", redisConfig.getDir()});
+                    } else if (param.equalsIgnoreCase("dbfilename")) {
+                        res = respSerializer.respArray(new String[]{"dbfilename", redisConfig.getDbfilename()});
+                    } else {
+                        // For unsupported CONFIG GET parameters, return a null bulk string
+                        // This matches Redis's behavior for unknown configuration parameters.
+                        res = respSerializer.serializeBulkString(null);
+                    }
+                } else {
+                    res = "-ERR unsupported CONFIG command\r\n";
+                }
+                break;
+        }
+        return new ResponseDto(res, data);
+    }
+
+    private void propagate(String[] command) {
+        String commandRespString = respSerializer.respArray(command);
+        try {
+            for(Slave s: connectionPool.getSlaves()){
+                s.send(commandRespString.getBytes());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

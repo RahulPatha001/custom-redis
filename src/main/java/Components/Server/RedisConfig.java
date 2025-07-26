@@ -12,6 +12,8 @@ public class RedisConfig {
     private int masterPort;
     private String masterReplId = null;
     private Long masterReplOffset = null;
+    private String dir; // Add this line
+    private String dbfilename; // Add this line
 
     public Long getMasterReplOffset() {
         if(masterReplOffset == null){
@@ -67,5 +69,22 @@ public class RedisConfig {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    // Add these new methods
+    public String getDir() {
+        return dir;
+    }
+
+    public void setDir(String dir) {
+        this.dir = dir;
+    }
+
+    public String getDbfilename() {
+        return dbfilename;
+    }
+
+    public void setDbfilename(String dbfilename) {
+        this.dbfilename = dbfilename;
     }
 }

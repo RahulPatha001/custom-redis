@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Arrays; // Import Arrays
 
 @Component
 public class SlaveTCPServer {
@@ -229,7 +230,8 @@ public class SlaveTCPServer {
             int bytesRead = client.inputStream.read(buffer);
             if(bytesRead > 0){
                 // bytes parsing into string
-                List<String[]>commands =  respSerializer.deserialize(buffer);
+                // Pass only the actual read bytes to deserialize
+                List<String[]>commands =  respSerializer.deserialize(Arrays.copyOfRange(buffer, 0, bytesRead));
                 for(String[] command: commands){
                     handleCommand(command, client);
                 }
@@ -267,7 +269,7 @@ public class SlaveTCPServer {
                 res = resDto.getResponse();
                 data = resDto.getData();
                 break;
-            case "CONFIG": // Add this new case
+            case "CONFIG":
                 if (command.length >= 3 && command[1].equalsIgnoreCase("GET")) {
                     String param = command[2];
                     if (param.equalsIgnoreCase("dir")) {
@@ -275,7 +277,6 @@ public class SlaveTCPServer {
                     } else if (param.equalsIgnoreCase("dbfilename")) {
                         res = respSerializer.respArray(new String[]{"dbfilename", redisConfig.getDbfilename()});
                     } else {
-                        // For unsupported CONFIG GET parameters, return a null bulk string
                         res = respSerializer.serializeBulkString(null);
                     }
                 } else {

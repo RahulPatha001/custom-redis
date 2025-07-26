@@ -25,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Arrays; // Import Arrays
 
 @Component
 public class MasterTCPServer {
@@ -41,9 +42,6 @@ public class MasterTCPServer {
 
     @Autowired
     private ConnectionPool connectionPool;
-
-    @Autowired
-    private Store store;
 
     public void startWorking(){
 
@@ -94,7 +92,8 @@ public class MasterTCPServer {
             int bytesRead = client.inputStream.read(buffer);
             if(bytesRead > 0){
                 // bytes parsing into string
-                List<String[]>commands =  respSerializer.deserialize(buffer);
+                // Pass only the actual read bytes to deserialize
+                List<String[]>commands =  respSerializer.deserialize(Arrays.copyOfRange(buffer, 0, bytesRead));
                 for(String[] command: commands){
                     handleCommand(command, client);
                 }
@@ -225,6 +224,20 @@ public class MasterTCPServer {
                 Instant now = Instant.now();
                 res = commandHandler.wait(command,now);
                 connectionPool.slavesThatAreCaughtUp = 0;
+                break;
+            case "CONFIG":
+                if (command.length >= 3 && command[1].equalsIgnoreCase("GET")) {
+                    String param = command[2];
+                    if (param.equalsIgnoreCase("dir")) {
+                        res = respSerializer.respArray(new String[]{"dir", redisConfig.getDir()});
+                    } else if (param.equalsIgnoreCase("dbfilename")) {
+                        res = respSerializer.respArray(new String[]{"dbfilename", redisConfig.getDbfilename()});
+                    } else {
+                        res = respSerializer.serializeBulkString(null);
+                    }
+                } else {
+                    res = "-ERR unsupported CONFIG command\r\n";
+                }
                 break;
         }
         return new ResponseDto(res, data);

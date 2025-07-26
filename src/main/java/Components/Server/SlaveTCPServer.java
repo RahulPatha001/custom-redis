@@ -267,6 +267,21 @@ public class SlaveTCPServer {
                 res = resDto.getResponse();
                 data = resDto.getData();
                 break;
+            case "CONFIG": // Add this new case
+                if (command.length >= 3 && command[1].equalsIgnoreCase("GET")) {
+                    String param = command[2];
+                    if (param.equalsIgnoreCase("dir")) {
+                        res = respSerializer.respArray(new String[]{"dir", redisConfig.getDir()});
+                    } else if (param.equalsIgnoreCase("dbfilename")) {
+                        res = respSerializer.respArray(new String[]{"dbfilename", redisConfig.getDbfilename()});
+                    } else {
+                        // For unsupported CONFIG GET parameters, return a null bulk string
+                        res = respSerializer.serializeBulkString(null);
+                    }
+                } else {
+                    res = "-ERR unsupported CONFIG command\r\n";
+                }
+                break;
         }
         client.send(res,data);
     }
